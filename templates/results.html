@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results for {{ original_zip_filename }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Results for {{ original_zip_filename }}</h1>
+
+        {% if error_message %}
+            <p class="message error-message">{{ error_message }}</p>
+        {% endif %}
+        {% if info_message %}
+            <p class="message info-message">{{ info_message }}</p>
+        {% endif %}
+
+        <h2>Chat Messages ({% if parsed_messages %}{{ parsed_messages|length }}{% else %}0{% endif %} found)</h2>
+        <p>Chat File: {{ chat_file_name if chat_file_name else 'Not found or not parsed' }}</p>
+        {% if parsed_messages %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Sender</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in parsed_messages %}
+                        <tr>
+                            <td>
+                                {% if message.timestamp is string %}
+                                    {{ message.timestamp }}
+                                {% else %}
+                                    {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') if message.timestamp else 'N/A' }}
+                                {% endif %}
+                            </td>
+                            <td>{{ message.sender }}</td>
+                            <td><pre>{{ message.message }}</pre></td> {# Use <pre> for preserving newlines #}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No messages to display.</p>
+        {% endif %}
+
+        <h2>Extracted Files ({% if extracted_files_details %}{{ extracted_files_details|length }}{% else %}0{% endif %} found)</h2>
+        {% if extracted_files_details %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Filename</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file_info in extracted_files_details %}
+                        <tr>
+                            <td>
+                                {% if file_info.is_audio %}
+                                    <input type="checkbox" name="audio_file" value="{{ file_info.name }}">
+                                {% endif %}
+                            </td>
+                            <td>{{ file_info.name }}</td>
+                            <td>{{ file_info.type }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No files found in archive.</p>
+        {% endif %}
+
+        <a href="{{ url_for('upload_file') }}" class="button-link">Upload another file</a>
+    </div>
+</body>
+</html>

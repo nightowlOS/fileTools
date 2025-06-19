@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>WhatsApp Chat Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload WhatsApp Chat Export (ZIP)</h1>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="zipfile" accept=".zip" required>
+            <input type="submit" value="Upload and Analyze">
+        </form>
+    </div>
+</body>
+</html>
