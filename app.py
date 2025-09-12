@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import zipfile
 import shutil
 from chat_parser import parse_chat_file
+from analyzer import analyze_directory
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -52,6 +53,7 @@ def upload_file():
         session.pop('parsed_messages', None)
         session.pop('chat_file_name', None)
         session.pop('extracted_files_details', None)
+        session.pop('analysis_results', None)
         session.pop('info_message', None) # Clear previous messages
         session.pop('error_message', None)
 
@@ -130,6 +132,11 @@ def upload_file():
                     session['info_message'] = f"Chat file (e.g., '_chat.txt') not found in ZIP. Displaying extracted files only."
 
                 session['extracted_files_details'] = get_extracted_files_info(current_extraction_path)
+
+                # **Perform intelligent analysis on the extracted folder**
+                analysis_results = analyze_directory(current_extraction_path)
+                session['analysis_results'] = analysis_results
+
                 return redirect(url_for('display_results'))
 
             except zipfile.BadZipFile:
@@ -160,6 +167,7 @@ def display_results():
     parsed_messages = session.get('parsed_messages', [])
     chat_file_name = session.get('chat_file_name', None)
     extracted_files_details = session.get('extracted_files_details', [])
+    analysis_results = session.get('analysis_results', None)
 
     error_message = session.pop('error_message', None)
     info_message = session.pop('info_message', None)
@@ -173,6 +181,7 @@ def display_results():
                            parsed_messages=parsed_messages,
                            chat_file_name=chat_file_name,
                            extracted_files_details=extracted_files_details,
+                           analysis_results=analysis_results,
                            error_message=error_message,
                            info_message=info_message)
 

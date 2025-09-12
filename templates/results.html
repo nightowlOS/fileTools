@@ -47,32 +47,62 @@
             <p>No messages to display.</p>
         {% endif %}
 
-        <h2>Extracted Files ({% if extracted_files_details %}{{ extracted_files_details|length }}{% else %}0{% endif %} found)</h2>
-        {% if extracted_files_details %}
+        {% if analysis_results and not analysis_results.error %}
+            <h2>Intelligent Analysis</h2>
+            <div class="analysis-summary">
+                <h3>Summary</h3>
+                <ul>
+                    <li><strong>Total Files:</strong> {{ analysis_results.summary.total_files }}</li>
+                    <li><strong>Total Directories:</strong> {{ analysis_results.summary.total_dirs }}</li>
+                    <li><strong>Total Size:</strong> {{ "%.2f" | format(analysis_results.summary.total_size / 1024) }} KB</li>
+                </ul>
+
+                {% if analysis_results.summary.file_types %}
+                    <h3>File Types</h3>
+                    <ul>
+                        {% for type, count in analysis_results.summary.file_types.items() %}
+                            <li><strong>{{ type|capitalize }}:</strong> {{ count }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if analysis_results.summary.languages %}
+                    <h3>Code Languages</h3>
+                    <ul>
+                        {% for lang, count in analysis_results.summary.languages.items() %}
+                            <li><strong>{{ lang }}:</strong> {{ count }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <h3>File Details</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Select</th>
-                        <th>Filename</th>
+                        <th>Name</th>
                         <th>Type</th>
+                        <th>Language</th>
+                        <th>Size (bytes)</th>
+                        <th>Lines</th>
+                        <th>Words</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for file_info in extracted_files_details %}
+                    {% for file in analysis_results.files %}
                         <tr>
-                            <td>
-                                {% if file_info.is_audio %}
-                                    <input type="checkbox" name="audio_file" value="{{ file_info.name }}">
-                                {% endif %}
-                            </td>
-                            <td>{{ file_info.name }}</td>
-                            <td>{{ file_info.type }}</td>
+                            <td>{{ file.name }}</td>
+                            <td>{{ file.type }}</td>
+                            <td>{{ file.language if file.language else 'N/A' }}</td>
+                            <td>{{ file.size }}</td>
+                            <td>{{ file.line_count if file.line_count is defined else 'N/A' }}</td>
+                            <td>{{ file.word_count if file.word_count is defined else 'N/A' }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <p>No files found in archive.</p>
+        {% elif analysis_results and analysis_results.error %}
+            <p class="message error-message">Could not perform analysis: {{ analysis_results.error }}</p>
         {% endif %}
 
         <a href="{{ url_for('upload_file') }}" class="button-link">Upload another file</a>
